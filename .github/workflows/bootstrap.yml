@@ -1,0 +1,20 @@
+name: Deploy Terraform Backend (S3 + DynamoDB)
+
+on:
+  workflow_dispatch: # Make sure this is manually triggered as we only want to run it on demand
+
+jobs:
+  bootstrap-backend:
+    name: "Deploy CloudFormation Bootstrap Stack"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2

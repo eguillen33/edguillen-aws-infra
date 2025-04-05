@@ -22,7 +22,7 @@ jobs:
       - name: Deploy CloudFormation Stack
         run: |
           aws cloudformation deploy \
-          --template-file bootstrap/terraform-backend.yaml \
+          --template-file bootstrap/terraform-backend-dev.yaml \
           --stack-name terraform-backend \
           --region us-west-2 \
           --capabilities CAPABILITY_NAMED_IAM

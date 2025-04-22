@@ -2,7 +2,9 @@ provider "aws" {
   region = var.aws_region
 }
 
-data "aws_availability_zones" "available" {}
+data "aws_availability_zones" "names" {
+  state = "available"
+}
 
 # VPC Module
 module "vpc" {

@@ -54,5 +54,3 @@ module "eks" {
     Project     = "edguillen-eks"
   }
 }
-
-data "aws_availability_zones" "available" {}

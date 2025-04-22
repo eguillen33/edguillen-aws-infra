@@ -1,16 +1,9 @@
 name: Deploy Dev Environment (EKS)
 
 on:
+  pull_request:
   push:
     branches: [main]
-    paths:
-      - 'terraform/environments/dev/**'
-      - '.github/workflows/deploy-dev.yml'
-
-  pull_request:
-    paths:
-      - 'terraform/environments/dev/**'
-
   workflow_dispatch:
 
 jobs:

@@ -1,10 +1,10 @@
 terraform {
   backend "s3" {
-    bucket       = "edguillen-terraform-state"
-    key          = "eks/dev/terraform.tfstate"
-    region       = "us-west-2"
-    encrypt      = true
-    use_lockfile = true
+    bucket         = "edguillen-terraform-state"
+    key            = "eks/dev/terraform.tfstate"
+    region         = "us-west-2"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
   }
 
   required_providers {

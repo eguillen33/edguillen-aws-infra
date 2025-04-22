@@ -57,7 +57,7 @@ jobs:
     name: Terraform Apply (Main Branch Only!!)
     needs: terraform-check
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/head/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: dev
 
     defaults:

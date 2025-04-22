@@ -2,16 +2,23 @@ name: Deploy Dev Environment (EKS)
 
 on:
   push:
-    branches: [main] # Eventually add support for PRs
+    branches: [main]
     paths:
       - 'terraform/environments/dev/**'
       - '.github/workflows/deploy-dev.yml'
 
+  pull_request:
+    paths:
+      - 'terraform/environments/dev/**'
+
   workflow_dispatch:
 
 jobs:
-  terraform-dev:
+  terraform-check:
+    name: Terraform Validate & Plan (PRs + Pushes)
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+
     defaults:
       run:
         working-directory: terraform/environments/dev
@@ -20,7 +27,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Configure AWS Environment
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -42,7 +49,36 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -var-file="default.tfvars" -out=tfplan
 
+  terraform-apply:
+    name: Terraform Apply (Main Branch Only!!)
+    needs: terraform-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/head/main' && github.event_name == 'push'
+    environment: dev
+
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.4
+
+      - run: terraform init
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve -var-file="default.tfvars"
+
+      - name: Output EKS Details
+        run: terraform output

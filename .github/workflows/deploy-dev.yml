@@ -1,17 +1,17 @@
 name: Deploy Dev Environment (EKS)
 
 on:
+  pull_request:
   push:
-    branches: [main] # Eventually add support for PRs
-    paths:
-      - 'terraform/environments/dev/**'
-      - '.github/workflows/deploy-dev.yml'
-
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  terraform-dev:
+  terraform-check:
+    name: Terraform Validate & Plan (PRs + Pushes)
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+
     defaults:
       run:
         working-directory: terraform/environments/dev
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Configure AWS Environment
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -42,7 +42,54 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: |
+          terraform plan \
+            -var='aws_region=us-west-2' \
+            -var='cluster_name=edguillen-eks-dev' \
+            -var='vpc_name=edguillen-vpc-dev' \
+            -var='vpc_cidr=10.0.0.0/16' \
+            -var='private_subnets=["10.0.1.0/24","10.0.2.0/24"]' \
+            -var='public_subnets=["10.0.101.0/24","10.0.102.0/24"]' \
+            -var='k8s_version=1.29' \
+            -out=tfplan
 
+  terraform-apply:
+    name: Terraform Apply (Main Branch Only!!)
+    needs: terraform-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/head/main' && github.event_name == 'push'
+    environment: dev
+
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.4
+
+      - run: terraform init
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: |
+          terraform apply \
+            -var='aws_region=us-west-2' \
+            -var='cluster_name=edguillen-eks-dev' \
+            -var='vpc_name=edguillen-vpc-dev' \
+            -var='vpc_cidr=10.0.0.0/16' \
+            -var='private_subnets=["10.0.1.0/24","10.0.2.0/24"]' \
+            -var='public_subnets=["10.0.101.0/24","10.0.102.0/24"]' \
+            -var='k8s_version=1.29' \
+            -auto-approve 
+
+      - name: Output EKS Details
+        run: terraform output

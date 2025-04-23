@@ -32,6 +32,8 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.8.4"
 
+  enable_cluster_creator_admin_permissions = true
+
   cluster_name    = var.cluster_name
   cluster_version = var.k8s_version
 

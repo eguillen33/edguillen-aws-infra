@@ -50,7 +50,7 @@ jobs:
             -var='vpc_cidr=10.0.0.0/16' \
             -var='private_subnets=["10.0.1.0/24","10.0.2.0/24"]' \
             -var='public_subnets=["10.0.101.0/24","10.0.102.0/24"]' \
-            -var='k8s_version=1.29' \
+            -var='k8s_version=1.30' \
             -out=tfplan
 
   terraform-apply:
@@ -88,7 +88,7 @@ jobs:
             -var='vpc_cidr=10.0.0.0/16' \
             -var='private_subnets=["10.0.1.0/24","10.0.2.0/24"]' \
             -var='public_subnets=["10.0.101.0/24","10.0.102.0/24"]' \
-            -var='k8s_version=1.29' \
+            -var='k8s_version=1.30' \
             -auto-approve 
 
       - name: Output EKS Details

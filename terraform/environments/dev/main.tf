@@ -53,6 +53,16 @@ module "eks" {
 
       instance_types = ["t3.medium"]
       capacity_type  = "ON_DEMAND"
+
+      tags = {
+        # Required for Cluster Autoscaler
+        "k8s.io/cluster-autoscaler/enabled"             = "true"
+        "k8s.io/cluster-autoscaler/${var.cluster_name}" = "owned"
+
+        # Optional context tags
+        Environment = "dev"
+        Project     = "edguillen-eks"
+      }
     }
   }
 

@@ -55,7 +55,8 @@ module "eks" {
       capacity_type  = "ON_DEMAND"
 
       update_config = {
-        force_update_version = true
+        max_unavailable_percentage = 33
+        force_update_version       = true
       }
 
       tags = {

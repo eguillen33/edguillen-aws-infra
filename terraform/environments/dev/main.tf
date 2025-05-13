@@ -54,6 +54,11 @@ module "eks" {
       instance_types = ["t3.medium"]
       capacity_type  = "ON_DEMAND"
 
+      update_config = {
+        max_unavailable_percentage = 33
+        force_update_version       = true
+      }
+
       tags = {
         # Required for Cluster Autoscaler
         "k8s.io/cluster-autoscaler/enabled"             = "true"
